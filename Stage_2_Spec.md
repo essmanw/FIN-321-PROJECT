@@ -15,7 +15,7 @@
 
 ## 1. Problem Statement
 
-Our company, a U.S. aerospace manufacturer, will receive **€17.8 million** in **one year** (≈ USD $20 million at spot 1.1600). Because our financial reporting is in USD, we face exposure to **EUR/USD depreciation risk**. The objective is to evaluate and compare hedging alternatives that stabilize USD proceeds while balancing cost and flexibility.  
+Our company, a U.S. aerospace manufacturer, will receive €17.8 million in one year (≈ USD $20 million at spot 1.1600). Because our financial reporting is in USD, we face exposure to EUR/USD depreciation risk. The objective is to evaluate and compare hedging alternatives that stabilize USD proceeds while balancing cost and flexibility.  
 This specification supports the treasury decision on whether and how to hedge the exposure through forwards, money-market instruments, or options.
 
 
@@ -71,7 +71,7 @@ This specification supports the treasury decision on whether and how to hedge th
 
 ## 6. Sensitivity Plan
 
-Vary EUR/USD spot at maturity \(S_T\) from **0.95 × S₀ = 1.10** to **1.05 × S₀ = 1.22** in increments of 0.01.  
+Vary EUR/USD spot at maturity \(S_T\) from 0.95 × S₀ = 1.10 to 1.05 × S₀ = 1.22 in increments of 0.01.  
 For each S_T, compute USD receipts under forward, money-market, put, call, and unhedged positions.  
 Present results as a comparison table and plot all hedges on one chart to illustrate certainty vs. optional value.
 
