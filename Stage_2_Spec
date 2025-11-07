@@ -12,14 +12,12 @@
 
 **Purpose:** Quantitatively outline the framework and structure for analyzing alternative FX-hedging strategies for a EUR-denominated receivable due in one year. The specification defines variables, assumptions, analytical flow, and outputs that will feed the Stage 3 Excel model and later AI-prompt generation.
 
----
 
 ## 1. Problem Statement
 
 Our company, a U.S. aerospace manufacturer, will receive **€17.8 million** in **one year** (≈ USD $20 million at spot 1.1600). Because our financial reporting is in USD, we face exposure to **EUR/USD depreciation risk**. The objective is to evaluate and compare hedging alternatives that stabilize USD proceeds while balancing cost and flexibility.  
 This specification supports the treasury decision on whether and how to hedge the exposure through forwards, money-market instruments, or options.
 
----
 
 ## 2. Inputs (Known Variables)
 
@@ -36,7 +34,6 @@ This specification supports the treasury decision on whether and how to hedge th
 | `Premium_put` | Put premium | USD per EUR | 0.019 | Scenario |
 | `Premium_call` | Call premium | USD per EUR | 0.024 | Scenario |
 
----
 
 ## 3. Assumptions & Constraints
 
@@ -48,7 +45,6 @@ This specification supports the treasury decision on whether and how to hedge th
 - Hedge notionals match the full receivable notional (€17.8 m).  
 - All instruments settle in one year (t = 1).  
 
----
 
 ## 4. Calculation Flow
 
@@ -61,8 +57,6 @@ This specification supports the treasury decision on whether and how to hedge th
 5. **Scenario Analysis** – Vary S_T across plausible EUR/USD paths.  
 6. **Compare Outcomes** – Summarize USD results, highlight certainty, optionality, and cost.  
 
----
-
 ## 5. Outputs
 
 | Output | Description | Format | Purpose |
@@ -74,7 +68,6 @@ This specification supports the treasury decision on whether and how to hedge th
 | `Chart_1` | Hedge payoffs vs. spot at maturity | Line chart | Visual comparison |
 | `Summary` | Written takeaway of hedge trade-offs | Text | Executive decision support |
 
----
 
 ## 6. Sensitivity Plan
 
@@ -82,14 +75,12 @@ Vary EUR/USD spot at maturity \(S_T\) from **0.95 × S₀ = 1.10** to **1.05 × 
 For each S_T, compute USD receipts under forward, money-market, put, call, and unhedged positions.  
 Present results as a comparison table and plot all hedges on one chart to illustrate certainty vs. optional value.
 
----
 
 ## 7. Limitations & Next Steps
 
 This specification excludes implied volatility, premium discounting, and transaction costs. All inputs reflect current indicative market data.  
 The next step (Stage 3) is to build the Excel model implementing this logic to quantify USD outcomes under each hedge and to develop the AI prompt that automates spreadsheet creation from these inputs.
 
----
 
 ## References
 
