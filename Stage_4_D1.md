@@ -1,94 +1,54 @@
-# Deliverable 1 — Structured AI Prompt (Executable)
+You are a financial modeling assistant acting as a **Finance Technologist / Treasury Analyst**. Build an auditable Excel model for hedging a EUR receivable using forwards, a 3-step money-market hedge, and options.
 
-**Role:** Finance Technologist / Treasury Analyst — build a complete, professional **Excel** model for a EUR receivable hedge using the instructions below. Generate the spreadsheet, formulas, named ranges, color rules, cross-checks, and export a downloadable `.xlsx` file.
+# GOAL
+Generate a clean, professional `.xlsx` that computes and compares USD proceeds for forward, money-market, and option hedges on a EUR receivable, with sensitivity analysis and verification checks.
 
----
+# CONTEXT
+This prompt implements Scenario 4 from my Stage 2 specification and follows the logic in my Stage 3 workbook. Use the exact variable names and structure below — do not invent new names. Keep exchange-rate quotes as **USD per EUR**.
 
-## A) Scenario-Specific Variables (use these exact values)
+# INPUT VARIABLES (explicit values)
+FC_AMT = 17,800,000  
+S0_in = 1.1600  
+F0_in = 1.0935  
+R_USD = 0.0475            # 4.75% p.a.  
+R_FC  = 0.0300            # 3.00% p.a.  
+K_PUT = 1.1600  
+K_CALL = 1.1600  
+PREM_PUT = 0.019          # USD per EUR, paid upfront  
+PREM_CALL = 0.024         # USD per EUR, paid upfront  
+T_DAYS = 360  
+T_YRS  = T_DAYS/360       # derive in-sheet
 
-- **FC_AMT** (EUR receivable): **€17,800,000**
-- **S0_in** (spot EUR/USD, USD per EUR, looked up on **December 09, 2025**): **1.1637**
-  - Source hint: ECB euro reference rate (daily).
-- **F0_in** (1Y forward rate, provided): **1.0935**
-- **R_USD** (USD 1Y rate, simple p.a., looked up): **4.00%**
-  - Source hint: Federal Funds Target Range — Upper Limit.
-- **R_FC** (EUR 1Y rate, simple p.a., looked up): **2.00%**
-  - Source hint: ECB **deposit facility** rate.
-- **K_PUT** (EUR put strike): **1.1600**
-- **K_CALL** (EUR call strike): **1.1600**
-- **PREM_PUT** (put premium, USD per EUR): **0.019**
-- **PREM_CALL** (call premium, USD per EUR): **0.024**
-- **T_DAYS**: **365**
-- **T_YRS**: compute as `=T_DAYS/365` (no leap-year adjustment)
-
-> Notes: Option premiums are paid upfront in USD. Exchange rates are USD per EUR. Hedge notional equals the full receivable. Maturity is 1 year.
-
----
-
-## B) Excel Build Requirements
-
-### 1) Named Ranges (create exactly these)
+# SPREADSHEET REQUIREMENTS
+1) **Named Ranges (exact names):**  
 `FC_AMT, S0_in, F0_in, R_USD, R_FC, K_PUT, K_CALL, PREM_PUT, PREM_CALL, T_DAYS, T_YRS`
 
-### 2) Color Coding (cell fill)
-- **Yellow** = *Inputs / decision variables* (all named ranges above)
-- **Blue** = *Assumptions* (conventions, date stamps, units)
-- **Green** = *Formulas / intermediate calcs*
-- **Gray** = *Outputs / KPIs*
+2) **Color Coding (strict):**  
+- Yellow = Inputs / decision variables (`FC_AMT, S0_in, K_PUT, K_CALL, PREM_PUT, PREM_CALL, T_DAYS`)  
+- Blue = Assumptions (`F0_in, R_USD, R_FC`)  
+- Green = Formulas  
+- Gray  = Outputs / KPIs
 
-### 3) Model Components (implement and label sections)
+3) **Model Components & Layout (labeled sections):**  
+- **Forward Hedge:** `USD_forward = FC_AMT × F0_in`.  
+- **Money-Market Hedge (3-step):**  
+  1. EUR borrowed today: `EUR_borrow = FC_AMT / (1 + R_FC × T_YRS)`  
+  2. USD today: `USD_today = EUR_borrow × S0_in`  
+  3. USD at maturity: `USD_mm = USD_today × (1 + R_USD × T_YRS)`  
+- **Covered Interest Parity (CIP) cross-check:**  
+  `F_implied = S0_in × (1 + R_USD × T_YRS) / (1 + R_FC × T_YRS)` and report `(F_implied − F0_in)/F0_in` in bps.  
+- **Options (premium + payoff):** with spot at maturity `S_T`  
+  - Unhedged: `USD_unhedged = FC_AMT × S_T`  
+  - Long EUR Put: `USD_put = FC_AMT × max(S_T, K_PUT) − PREM_PUT × FC_AMT`  
+  - Long EUR Call: `USD_call = FC_AMT × (S_T + max(S_T − K_CALL, 0)) − PREM_CALL × FC_AMT`  
+- **Sensitivity Table:** vary `S_T` from `0.95×S0_in` to `1.05×S0_in` in 0.01 increments and compute `USD_unhedged, USD_put, USD_call, USD_forward, USD_mm`.  
+- **Outputs / KPIs (Gray):** `USD_forward, USD_mm, CIP_diff_bps`.
 
-**(a) Forward Hedge**
-- USD proceeds at maturity: `USD_forward = FC_AMT * F0_in`
+4) **Formatting**
+- Clear section headers, consistent number formats, freeze panes, and a separate **Sensitivity** sheet.
+- Provide an **Audit** sheet listing each named range and its absolute cell reference.
 
-**(b) Money Market Hedge (3-step)**
-1. EUR to borrow now: `EUR_borrow = FC_AMT / (1 + R_FC * T_YRS)`  
-2. Convert at spot and invest in USD: `USD_invest = EUR_borrow * S0_in`  
-3. Maturity USD: `USD_mm = USD_invest * (1 + R_USD * T_YRS)`  
+# NAMED RANGE DEFINITIONS
+Create workbook-level names exactly as listed under “Named Ranges”. Use them in all formulas and sensitivity logic.
 
-**(c) Option Hedges (premium + payoff)**
-- Define a *scenario spot at maturity* `S_T` (a green formula driver).
-- EUR **put** payoff per EUR at *maturity*: `put_payoff_per_EUR = MAX(K_PUT - S_T, 0)`  
-  - Total: `PUT_payoff = FC_AMT * put_payoff_per_EUR`  
-  - Net USD receipts from receivable + option: `USD_put = FC_AMT * S_T + PUT_payoff - FC_AMT * PREM_PUT`
-- EUR **call** payoff per EUR at *maturity*: `call_payoff_per_EUR = MAX(S_T - K_CALL, 0)`  
-  - Total: `CALL_payoff = FC_AMT * call_payoff_per_EUR`  
-  - Net USD receipts: `USD_call = FC_AMT * S_T - FC_AMT * PREM_CALL + CALL_payoff`
-
-**(d) Unhedged Benchmark**
-- `USD_unhedged = FC_AMT * S_T`
-
-**(e) Sensitivity Table**
-- Two-way or one-way table across **S_T ∈ [0.95×S0_in, 1.05×S0_in]** in 0.01 increments (1-cent in USD/EUR).  
-- Columns: `S_T`, `USD_forward`, `USD_mm`, `USD_put`, `USD_call`, `USD_unhedged`.
-- Add a chart “**Hedge Payoffs vs S_T**” plotting each series.
-
-**(f) Formatting & Documentation**
-- Put an *Inputs* panel at the top (yellow), a compact *Assumptions* block (blue), *Calculations* (green), and *Outputs/KPIs* (gray).  
-- Display key KPIs: locked-in USD from forward, USD from MM hedge, expected option outcomes at S_T = S0_in, and range statistics (min/max across the sensitivity).
-
-### 4) Cross‑Checks & Parity
-- **Interest‑rate parity**: compute `F_theoretical = S0_in * (1 + R_USD*T_YRS) / (1 + R_FC*T_YRS)` and show `ΔF = F0_in - F_theoretical` (gray).  
-- **Consistency**: check `ABS(USD_forward - USD_mm) < 0.01 * USD_forward` and flag PASS/FAIL.  
-- **Named-range audit**: list all named ranges with `=NAME.MANAGER()` equivalent output or a generated mapping table.
-
----
-
-## C) Verification & Delivery Instructions (the AI must perform these)
-1. **Validate parity**: Report `F_theoretical`, `ΔF`, and PASS/FAIL of `USD_forward` ≈ `USD_mm` test.  
-2. **Confirm named ranges**: Return a table with each required name, scope, and cell address.  
-3. **Return full formula mapping**: For each output/KPI and key intermediate (items above), output the exact Excel formula text and the dependent named ranges.  
-4. **Provide artifact**: Produce and return a **downloadable `.xlsx` file** with the build, the sensitivity table, and the chart.
-
----
-
-## D) Implementation Hints (non-binding but recommended)
-- Use simple (non-annualized) interest over `T_YRS` as specified.  
-- Keep units explicit (USD per EUR).  
-- Place a date-stamp cell with today’s date `2025-12-09` and freeze panes for usability.  
-- Use consistent number formats: 4 decimals for FX rates, 2 for USD amounts, percentages for rates.
-
----
-
-## Source Context (for the AI, not for the CFO)
-This prompt is derived from our Stage 2 specification (variables, flow, and outputs) and implements the Stage 3 logic described therein.
+# MODEL LOGIC (PSEUDOCODE)
